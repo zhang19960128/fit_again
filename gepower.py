@@ -1,6 +1,7 @@
 import numpy as np
 import functionscount
 from itertools import combinations
+POWERFOLDER="./POWER"
 def plus2(starttick,finalist):
   secondlist=finalist.copy();
   returntick=len(finalist);
@@ -31,7 +32,6 @@ def generatelist(prototype,maxpower):
   return nodup;
 def generateall(modelist,maxpower):
   powerlist=functionscount.dedup_function(modelist);
-  print(powerlist)
   outlist=[];
   for i in powerlist:
     outlist=outlist+generatelist([i],maxpower);
@@ -47,7 +47,43 @@ def expand(modecoupling,modelist,powerlist):
       blanklist[modelist.index(modecoupling[j])]=power[j];
     expandlist.append(blanklist);
   return expandlist;
+def writepower(modecoupling,powerlist):
+  filename=POWERFOLDER+"/POWER";
+  for i in range(len(modecoupling)):
+    filename=filename+"_"+str(modecoupling[i]);
+  filename=filename+".dat";
+  f=open(filename,'w');
+  for i in range(len(powerlist)):
+    for j in range(len(powerlist[i])):
+      f.write("{0:4d}".format(powerlist[i][j]));
+    f.write("\n");
+  f.close();
 modelist=[2,11,13,15,19,21,22,29];
+# Two Mode coupling
+for i in modelist:
+  for j in modelist:
+    if i < j:
+      powerlist=generateall([i,j],4);
+      expandlist=expand([i,j],modelist,powerlist);
+      writepower([i,j],expandlist);
+# Third Mode coupling
+for i in modelist:
+  for j in modelist:
+    for k in modelist:
+      if i < j and j < k:
+        powerlist=generateall([i,j,k],4);
+        expandlist=expand([i,j,k],modelist,powerlist);
+        writepower([i,j,k],expandlist);
+# Four Mode coupling
+for i in modelist:
+  for j in modelist:
+    for k in modelist:
+      for m in modelist:
+        if i < j and j < k and k < m:
+          powerlist=generateall([i,j,k,m],4);
+          expandlist=expand([i,j,k,m],modelist,powerlist);
+          writepower([i,j,k,m],expandlist);
+# Four Mode coupling
 for i in modelist:
   for j in modelist:
     for k in modelist:
@@ -55,4 +91,5 @@ for i in modelist:
         for n in modelist:
           if i < j and j < k and k < m and m < n:
             powerlist=generateall([i,j,k,m,n],4);
-            print(expand([i,j,k,m,n],modelist,powerlist));
+            expandlist=expand([i,j,k,m,n],modelist,powerlist);
+            writepower([i,j,k,m,n],expandlist);

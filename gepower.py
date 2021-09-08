@@ -45,7 +45,8 @@ def expand(modecoupling,modelist,powerlist):
     power=powerlist[i];
     for j in range(len(modecoupling)):
       blanklist[modelist.index(modecoupling[j])]=power[j];
-    expandlist.append(blanklist);
+    if np.sum(np.array(blanklist)) <= 14:
+      expandlist.append(blanklist);
   return expandlist;
 def writepower(modecoupling,powerlist):
   filename=POWERFOLDER+"/POWER";

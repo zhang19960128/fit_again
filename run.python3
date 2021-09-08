@@ -1,0 +1,5 @@
+#!/bin/bash
+#SBATCH -n 20
+#SBATCH -p debug2
+#SBATCH -t 00:30:00
+/workspace/jiahaoz/PACKAGE_INSTALL/anaconda3/bin/mpirun -n 10 /workspace/jiahaoz/PACKAGE_INSTALL/anaconda3/bin/python3 ./globalfit.py  > result.txt

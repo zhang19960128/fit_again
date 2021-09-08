@@ -59,6 +59,11 @@ def writepower(modecoupling,powerlist):
     f.write("\n");
   f.close();
 modelist=[2,11,13,15,19,21,22,29];
+# Single Mode Coupling
+for i in modelist:
+  powerlist=[[p] for p in range(2,8+2,2)]
+  expandlist=expand([i],modelist,powerlist)
+  writepower([i],expandlist)
 # Two Mode coupling
 for i in modelist:
   for j in modelist:

@@ -20,6 +20,10 @@ def testfunction(coeff):
   for i in range(len(pathcoeff)):
     for j in range(len(powerlist)):
       Eall[i]=Eall[i]+coeff[j]*function(pathcoeff[i,1:9],powerlist[j]);
+#  plt.plot(Plist,Eall,'-o');
+#  plt.xlabel("Polarization(C/m$^2$)")
+#  plt.ylabel("Energy(eV)")
+#  plt.savefig("/workspace/jiahaoz/HZO/LG_Model/GroundP/HfO4/WaveVector/process/FIT/triple/FIT3REp/PYTHONMASTERFIT/newfitting/fitted.png")
   return [Plist,Eall]
 modelist=[2,11,13,15,19,21,22,29];
 onemode=[];
@@ -59,35 +63,41 @@ for i in range(len(modelist)):
             parray=np.loadtxt("./POWER/POWER_{0:d}_{1:d}_{2:d}_{3:d}_{4:d}.dat".format(modelist[i],modelist[j],modelist[k],modelist[m],modelist[n]));
             plist=[list(i) for i in parray];
             termlist=termlist+plist;
-termfile=open("POWERTERM.dat",'w');
-for i in range(len(termlist)):
-  for j in range(len(modelist)):
-    termfile.write("{0:3d}".format(int(termlist[i][j])));
-  termfile.write("\n")
-termfile.close();
+comm = MPI.COMM_WORLD;
+size=comm.Get_size();
+rank=comm.Get_rank();
+if rank==0:
+  termfile=open("POWERTERM.dat",'w');
+  for i in range(len(termlist)):
+    for j in range(len(modelist)):
+      termfile.write("{0:3d}".format(int(termlist[i][j])));
+    termfile.write("\n")
+  termfile.close();
 Xarray=np.zeros((len(totaldata),len(termlist)));
 SUMXarray=np.zeros((len(totaldata),len(termlist)));
 Yarray=np.zeros(len(totaldata));
 SUMYarray=np.zeros(len(totaldata));
-comm = MPI.COMM_WORLD;
-size=comm.Get_size();
-rank=comm.Get_rank();
 for i in range(rank,len(totaldata),size):
-  if rank==0:
-    print(i);
   for j in range(len(termlist)):
     Xarray[i][j]=function(totaldata[i][0:8],termlist[j]);
   Yarray[i]=totaldata[i][8]-zeroenergy;
-comm.Reduce(Xarray,SUMXarray,op=MPI.SUM);
-comm.Reduce(Yarray,SUMYarray,op=MPI.SUM);
+  if rank==0:
+    print(i)
+comm.Allreduce(Xarray,SUMXarray,op=MPI.SUM);
+comm.Allreduce(Yarray,SUMYarray,op=MPI.SUM);
 if rank==0:
-#  reg=LinearRegression().fit(SUMXarray, SUMYarray);
-#  [Plist,Eall]=testfunction(reg.coef_);
   print("I am here 0")
-  re=np.matmul(SUMXarray.T,SUMXarray);
+#  f=open("Ydata",'w');
+#  for i in range(len(SUMYarray)):
+#    f.write("{0:d} {1:10.7f}\n".format(i,SUMYarray[i]));
+#  f.close();
   print("I am here 1 ")
-#  for i in range(len(Plist)):
-#    print(Plist[i],Eall[i])
+  reg=LinearRegression().fit(SUMXarray, SUMYarray);
+  [Plist,Eall]=testfunction(reg.coef_);
+  for i in range(len(reg.coef_)):
+    print("{0:d} {1:10.7f}".format(i,reg.coef_[i]))
+  for i in range(len(Plist)):
+    print(Plist[i],Eall[i])
   print("I am here 2 ")
 comm.Barrier();
 MPI.Finalize();
